@@ -4,20 +4,21 @@ import request from "request";
 const app: express.Application = express();
 const port: number = 3000;
 const DRUID_SQL_URL: string = "http://localhost:8082/druid/v2/sql/";
-const LATEST_DATA_QUERY: any = {
-  query: "SELECT * FROM INITIAL_DATA WHERE __time >= FLOOR(CURRENT_TIMESTAMP TO minute)"
+const LATEST_DATA_QUERY: Object = {
+  query: "SELECT * FROM INITIAL_DATA ORDER BY __time DESC LIMIT 1"
 };
 
 function handleLatestData(req: express.Request, res: express.Response): void {
-  request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: string) => {
+  request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
     if (body) {
-      console.log(body)
+      let str = JSON.stringify(body);
+      let jsonResult = str.substring(1, str.length - 1);
       res.contentType("json");
-      res.send(body);
+      res.send(jsonResult);
     } else {
       console.log(error);
-      res.sendStatus(400);
-      res.send("error connecting to druid");
+      res.sendStatus(500);
+      res.send({ error: "Error connecting to database" });
     }
   }).json(LATEST_DATA_QUERY);
 }
