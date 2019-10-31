@@ -7,7 +7,8 @@ const DRUID_SQL_URL: string = "http://localhost:8082/druid/v2/sql/";
 const LATEST_DATA_QUERY: Object = {
   query: "SELECT * FROM INITIAL_DATA ORDER BY __time DESC LIMIT 1"
 };
-
+const cors = require('cors');
+app.use(cors());
 function handleLatestData(req: express.Request, res: express.Response): void {
   request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
     if (body) {
