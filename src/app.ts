@@ -1,5 +1,6 @@
 import express from "express";
 import request from "request";
+import cors from "cors";
 
 const app: express.Application = express();
 const port: number = 3000;
@@ -23,6 +24,8 @@ function handleLatestData(req: express.Request, res: express.Response): void {
   }).json(LATEST_DATA_QUERY);
 }
 
+// setting up server and routing
+app.use(cors());
 app.get("/latestData", handleLatestData);
 app.get("/", (req, res) => {
   res.send("hello world");
