@@ -73,8 +73,9 @@ app.use(cors());
 app.get("/sensors", getSensors);
 app.get("/latestData", handleLatestData);
 app.get("/intervalData", (req, res) => {
-  handleIntervalData(req, res, "2019-10-06T20:12:30.000Z", "2019-11-06T20:12:30.000Z", "001e06305a12");
+  handleIntervalData(req, res, req.query.firstDate, req.query.lastDate, req.query.sensors);
 });
+
 app.get("/", (req, res) => {
   res.send("hello world");
 });
