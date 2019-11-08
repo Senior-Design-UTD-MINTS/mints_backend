@@ -28,8 +28,10 @@ function handleLatestData(req: express.Request, res: express.Response): void {
 }
 
 function handleIntervalData(req: express.Request, res: express.Response, firstDate: string, lastDate: string, sensor: string): void {
-  var INTERVAL_DATA_QUERY: any = { query: "SELECT __time as dateTime, Latitude, Longitude, PM1, PM2_5, PM4, PM10, PMTotal, Temperature, Humidity FROM MINTS_" + sensor + " WHERE __time > '" + firstDate + "' AND __time < '" + lastDate + "'" }
-  if (isIsoDate(firstDate) && isIsoDate(lastDate)) {
+  var INTERVAL_DATA_QUERY: any = { query: "SELECT __time as dateTime, Latitude, Longitude, PM1, PM2_5, PM4, PM10, PMTotal, Temperature, Humidity FROM MINTS_" + sensor + " WHERE __time >= '" + firstDate + "' AND __time <= '" + lastDate + "'" }
+  var first = new Date(firstDate);
+  var last = new Date(lastDate);
+  if (isIsoDate(firstDate) && isIsoDate(lastDate) && first <= last) {
     request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: string) => {
       if (body) {
         console.log(body)
