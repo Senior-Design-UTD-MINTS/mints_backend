@@ -13,7 +13,7 @@ const BASE_SENSOR_INFO_SELECT_CLAUSE: string = "SELECT __time as dateTime, Latit
 function handleLatestData(req: express.Request, res: express.Response): void {
   if (req.query.sensor) {
     let sensor = req.query.sensor;
-    let query_str: string = BASE_SENSOR_INFO_SELECT_CLAUSE + " FROM MINTS_{$sensor} ORDER BY __time DESC LIMIT 1";
+    let query_str: string = BASE_SENSOR_INFO_SELECT_CLAUSE + " FROM MINTS_${sensor} ORDER BY __time DESC LIMIT 1";
     request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
       if (body) {
         let str = JSON.stringify(body);
