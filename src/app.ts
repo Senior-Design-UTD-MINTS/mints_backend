@@ -12,8 +12,13 @@ const BASE_SENSOR_INFO_SELECT_CLAUSE: string = "SELECT __time as dateTime, Latit
 
 function handleLatestData(req: express.Request, res: express.Response): void {
   if (req.query.sensor) {
-    let sensor = req.query.sensor;
-    let query_str: string = BASE_SENSOR_INFO_SELECT_CLAUSE + " FROM MINTS_${sensor} ORDER BY __time DESC LIMIT 1";
+    let sensor: string = req.query.sensor;
+    if (isSQLInjectionAttempt(sensor)) {
+      res.sendStatus(400);
+      res.send("bad sensor string");
+      return;
+    }
+    let query_str: string = BASE_SENSOR_INFO_SELECT_CLAUSE + ` FROM MINTS_${sensor} ORDER BY __time DESC LIMIT 1`;
     request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
       if (body) {
         let str = JSON.stringify(body);
@@ -27,71 +32,79 @@ function handleLatestData(req: express.Request, res: express.Response): void {
       }
     }).json({ query: query_str });
   } else {
-    res.send(400);
+    res.sendStatus(400);
     res.send("Provide a sensor id to query");
   }
+}
 
-  function handleIntervalData(req: express.Request, res: express.Response): void {
-    if (req.query.sensor && req.query.start && req.query.end) {
-      let sensor: string = req.query.sensor;
-      let startDate: Date = new Date(req.query.start);
-      let endDate: Date = new Date(req.query.end);
-      if (!startDate || !endDate) {
-        res.sendStatus(400);
-        res.send("Need valid dates for the start and end query params");
-      } else if (startDate > endDate) {
-        res.sendStatus(400);
-        res.send("Start date must start before end date");
-      } else {
-        let isoStartDate: string = startDate.toISOString();
-        let isoEndDate: string = endDate.toISOString();
-        let query_str: string = BASE_SENSOR_INFO_SELECT_CLAUSE + " FROM MINTS_${sensor} WHERE __time >= '${isoStartDate}' AND __time <= '${isoEndDate}'";
-        request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: string) => {
-          if (body) {
-            console.log(body)
-            res.contentType("json");
-            res.send(body);
-          } else {
-            console.log(error);
-            res.sendStatus(400);
-            res.send("error connecting to druid");
-          }
-        }).json({ query: query_str });
-      }
+function handleIntervalData(req: express.Request, res: express.Response): void {
+  if (req.query.sensor && req.query.start && req.query.end) {
+    let sensor: string = req.query.sensor;
+    let startDate: Date = new Date(req.query.start);
+    let endDate: Date = new Date(req.query.end);
+    if (!startDate || !endDate) {
+      res.sendStatus(400);
+      res.send("Need valid dates for the start and end query params");
+    } else if (isSQLInjectionAttempt(sensor)) {
+      res.sendStatus(400);
+      res.send("Bad sensor string");
+    } else if (startDate > endDate) {
+      res.sendStatus(400);
+      res.send("Start date must start before end date");
     } else {
-      res.send(400);
-      console.log("invalid args");
+      let isoStartDate: string = startDate.toISOString();
+      let isoEndDate: string = endDate.toISOString();
+      let query_str: string = BASE_SENSOR_INFO_SELECT_CLAUSE + ` FROM MINTS_${sensor} WHERE __time >= '${isoStartDate}' AND __time <= '${isoEndDate}'`;
+      request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: string) => {
+        if (body) {
+          console.log(body)
+          res.contentType("json");
+          res.send(body);
+        } else {
+          console.log(error);
+          res.sendStatus(400);
+          res.send("error connecting to druid");
+        }
+      }).json({ query: query_str });
     }
+  } else {
+    res.sendStatus(400);
+    console.log("invalid args");
   }
+}
 
-  function getSensors(req: express.Request, res: express.Response): void {
-    request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: string) => {
-      if (body) {
-        console.log(body)
-        res.contentType("json");
-        res.send(body);
-      } else {
-        console.log(error);
-        res.sendStatus(400);
-        res.send("error connecting to druid");
-      }
-    }).json(TABLE_NAME_QUERY);
-  }
-
-  // setting up server and routing
-  app.use(cors());
-  app.get("/sensors", getSensors);
-  app.get("/latestData", handleLatestData);
-  app.get("/intervalData", handleIntervalData);
-
-  app.get("/", (req, res) => {
-    res.send("hello world");
-  });
-
-  app.listen(port, err => {
-    if (err) {
-      return console.error(err);
+function getSensors(req: express.Request, res: express.Response): void {
+  request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: string) => {
+    if (body) {
+      console.log(body)
+      res.contentType("json");
+      res.send(body);
+    } else {
+      console.log(error);
+      res.sendStatus(400);
+      res.send("error connecting to druid");
     }
-    return console.log(`server is listening on port ${port}`);
-  });
+  }).json(TABLE_NAME_QUERY);
+}
+
+function isSQLInjectionAttempt(s: string): boolean {
+  return s.includes("--");
+}
+
+// setting up server and routing
+app.use(cors());
+app.get("/sensors", getSensors);
+app.get("/latestData", handleLatestData);
+app.get("/intervalData", handleIntervalData);
+
+app.get("/", (req, res) => {
+  res.send("hello world");
+});
+
+app.listen(port, err => {
+  if (err) {
+    return console.error(err);
+  }
+  return console.log(`server is listening on port ${port}`);
+});
 
