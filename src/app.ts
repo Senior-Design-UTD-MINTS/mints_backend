@@ -18,11 +18,12 @@ function handleLatestData(req: express.Request, res: express.Response): void {
       res.send("bad sensor string");
       return;
     }
-    let query_str: string = BASE_SENSOR_INFO_SELECT_CLAUSE + ` FROM MINTS_${sensor} ORDER BY __time DESC LIMIT 1`;
+    let query_str: string = BASE_SENSOR_INFO_SELECT_CLAUSE + ` FROM ${sensor} ORDER BY __time DESC LIMIT 1`;
     request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
       if (body) {
-        let str = JSON.stringify(body);
-        let jsonResult = str.substring(1, str.length - 1);
+        // removing the array notation since it will only have 1 item
+        let str: string = JSON.stringify(body);
+        let jsonResult: string = str.substring(1, str.length - 1);
         res.contentType("json");
         res.send(jsonResult);
       } else {
@@ -54,12 +55,11 @@ function handleIntervalData(req: express.Request, res: express.Response): void {
     } else {
       let isoStartDate: string = startDate.toISOString();
       let isoEndDate: string = endDate.toISOString();
-      let query_str: string = BASE_SENSOR_INFO_SELECT_CLAUSE + ` FROM MINTS_${sensor} WHERE __time >= '${isoStartDate}' AND __time <= '${isoEndDate}'`;
-      request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: string) => {
+      let query_str: string = BASE_SENSOR_INFO_SELECT_CLAUSE + ` FROM ${sensor} WHERE __time >= '${isoStartDate}' AND __time <= '${isoEndDate}'`;
+      request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
         if (body) {
-          console.log(body)
           res.contentType("json");
-          res.send(body);
+          res.send({ "entries": body });
         } else {
           console.log(error);
           res.sendStatus(400);
@@ -74,7 +74,7 @@ function handleIntervalData(req: express.Request, res: express.Response): void {
 }
 
 function getSensors(req: express.Request, res: express.Response): void {
-  request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: string) => {
+  request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
     if (body) {
       console.log(body)
       res.contentType("json");
@@ -88,7 +88,7 @@ function getSensors(req: express.Request, res: express.Response): void {
 }
 
 function isSQLInjectionAttempt(s: string): boolean {
-  return s.includes("--");
+  return s.includes("--") || s.includes("\'");
 }
 
 // setting up server and routing
@@ -96,7 +96,6 @@ app.use(cors());
 app.get("/sensors", getSensors);
 app.get("/latestData", handleLatestData);
 app.get("/intervalData", handleIntervalData);
-
 app.get("/", (req, res) => {
   res.send("hello world");
 });
