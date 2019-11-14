@@ -6,7 +6,7 @@ const app: express.Application = express();
 const port: number = 3000;
 const DRUID_SQL_URL: string = "http://localhost:8082/druid/v2/sql/";
 const TABLE_NAME_QUERY: any = {
-  query: "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'TABLE'"
+  query: "SELECT TABLE_NAME as Sensors FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'TABLE'"
 };
 const BASE_SENSOR_INFO_SELECT_CLAUSE: string = "SELECT __time as dateTime, Latitude, Longitude, PM1, PM2_5, PM4, PM10, PMTotal, Temperature, Humidity"
 
@@ -77,14 +77,23 @@ function getSensors(req: express.Request, res: express.Response): void {
   request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
     if (body) {
       console.log(body)
+      let str: string = JSON.stringify(body);
+      let obj = JSON.parse(str);
+      let fin: string = " { Sensors: ";
+      for (var i = 0, len = obj.length; i < len; ++i) {
+        if (i != obj.length - 1)
+          fin = fin + obj[i].Sensors + " , "
+        else
+          fin = fin + obj[i].Sensors + " } "
+      }
       res.contentType("json");
-      res.send(body);
+      res.send(fin);
     } else {
       console.log(error);
       res.sendStatus(400);
       res.send("error connecting to druid");
     }
-  }).json(TABLE_NAME_QUERY);
+  }).json(TABLE_NAME_QUERY).toJSON;
 }
 
 function isSQLInjectionAttempt(s: string): boolean {
