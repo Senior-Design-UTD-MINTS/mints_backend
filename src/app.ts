@@ -79,9 +79,9 @@ function getSensors(req: express.Request, res: express.Response): void {
       console.log(body);
       // we receive an array of { "sensors": "<SENSOR_ID>"}. 
       // we convert to an array of strings of the <SENSOR_ID> values
-      let innerBody = body.map(x => `"${x.sensor}", `).reduce((acc, sensor) => acc + sensor);
-      let withoutTrailingComma = innerBody.substring(0, innerBody.length - 2);
-      let fin = `{ "sensors": [ ${withoutTrailingComma} ] }`;
+      let innerBody: string = body.map((x: { sensor: string; }) => `"${x.sensor}", `).reduce((acc: string, sensor: string) => acc + sensor);
+      let withoutTrailingComma: string = innerBody.substring(0, innerBody.length - 2);
+      let fin: string = `{ "sensors": [ ${withoutTrailingComma} ] }`;
       res.contentType("json");
       res.send(fin);
     } else {
