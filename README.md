@@ -20,6 +20,7 @@ npm start
 *description*: returns the latest data for that sensor. Not guaranteed to be the latest so check the dateTime timestamp
 
 **intervalData**
+
 *queryParams*:
 
   - sensor: same as before
