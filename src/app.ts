@@ -96,7 +96,7 @@ function getSensors(req: express.Request, res: express.Response): void {
       res.sendStatus(400);
       res.send("error connecting to druid");
     }
-  }).json(TABLE_NAME_QUERY);
+  }).json(toDruidQueryJSON(TABLE_NAME_QUERY));
 }
 
 function toDruidQueryJSON(query_str: string): Object {
