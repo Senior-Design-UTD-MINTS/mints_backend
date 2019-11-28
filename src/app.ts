@@ -2,6 +2,7 @@ import express from "express";
 import request from "request";
 // front end was having issues without cors, so use cors
 import cors from "cors";
+import { readFileSync } from 'fs';
 
 const app: express.Application = express();
 const server_port: number = 3000;
@@ -79,6 +80,34 @@ function handleIntervalData(req: express.Request, res: express.Response): void {
   }
 }
 
+// returns aggregation with granualarity of a minute for most recent day
+function getLatestAggregation(req: express.Request, res: express.Response): void {
+  if (req.query.sensor) {
+    let sensor: string = req.query.sensor;
+    if (isSQLInjectionAttempt(sensor)) {
+      res.sendStatus(400);
+      res.send("Bad sensor string");
+    } else {
+      var file = readFileSync('aggregation.txt', 'utf-8');
+      var fin = file.replace("SENSORSOURCE", '"' + sensor + '"');
+      request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
+        if (body) {
+          res.contentType("json");
+          res.send({ "entries": body });
+        } else {
+          console.log(error);
+          res.sendStatus(400);
+          res.send("error connecting to druid");
+        }
+        console.log(fin)
+      }).json(toDruidQueryJSON(fin));
+    }
+  } else {
+    res.sendStatus(400);
+    console.log("invalid args");
+  }
+}
+
 // lists all the sensors (sensors corresponding to tables) that the can be queried using this server
 function getSensors(req: express.Request, res: express.Response): void {
   request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
@@ -112,6 +141,7 @@ app.use(cors());
 app.get("/sensors", getSensors);
 app.get("/latestData", handleLatestData);
 app.get("/intervalData", handleIntervalData);
+app.get("/aggregationData", getLatestAggregation);
 app.get("/", (req, res) => {
   res.send("hello world");
 });

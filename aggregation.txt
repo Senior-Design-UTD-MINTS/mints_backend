@@ -1,0 +1,242 @@
+{
+  "queryType": "topN",
+  "dataSource": SENSORSOURCE,
+  "dimension": "sample_dim",
+  "threshold": 1440,
+  "metric": "count",
+  "granularity": "minute",
+  "aggregations": [
+    {
+      "type": "doubleSum",
+      "name": "count",
+      "fieldName": "count"
+    },
+    {
+      "type": "doubleSum",
+      "name": "Altitude",
+      "fieldName": "Altitude"
+    },
+    {
+      "type": "doubleSum",
+      "name": "dCn",
+      "fieldName": "dCn"
+    },
+    {
+      "type": "doubleSum",
+      "name": "Humidity",
+      "fieldName": "Humidity"
+    },
+    {
+      "type": "doubleSum",
+      "name": "PM1",
+      "fieldName": "PM1"
+    },
+    {
+      "type": "doubleSum",
+      "name": "PM2_5",
+      "fieldName": "PM2_5"
+    },
+    {
+      "type": "doubleSum",
+      "name": "PM4",
+      "fieldName": "PM4"
+    },
+    {
+      "type": "doubleSum",
+      "name": "PM10",
+      "fieldName": "PM10"
+    },
+    {
+      "type": "doubleSum",
+      "name": "PMTotal",
+      "fieldName": "PMTotal"
+    },
+    {
+      "type": "doubleSum",
+      "name": "Pressure",
+      "fieldName": "Pressure"
+    },
+    {
+      "type": "doubleSum",
+      "name": "Temperature",
+      "fieldName": "Temperature"
+    }
+    
+  ],
+  "postAggregations": [
+    {
+      "type": "arithmetic",
+      "name": "Average PM2_5",
+      "fn": "/",
+      "fields": [
+        {
+          "type": "fieldAccess",
+          "name": "PM2_5",
+          "fieldName": "PM2_5"
+        },
+        {
+          "type": "fieldAccess",
+          "name": "count",
+          "fieldName": "count"
+        }
+      ]
+    },
+    {
+      "type": "arithmetic",
+      "name": "Average Altitude",
+      "fn": "/",
+      "fields": [
+        {
+          "type": "fieldAccess",
+          "name": "Altitude",
+          "fieldName": "Altitude"
+        },
+        {
+          "type": "fieldAccess",
+          "name": "count",
+          "fieldName": "count"
+        }
+      ]
+    },
+    {
+      "type": "arithmetic",
+      "name": "Average dCn",
+      "fn": "/",
+      "fields": [
+        {
+          "type": "fieldAccess",
+          "name": "dCn",
+          "fieldName": "dCn"
+        },
+        {
+          "type": "fieldAccess",
+          "name": "count",
+          "fieldName": "count"
+        }
+      ]
+    },
+    {
+      "type": "arithmetic",
+      "name": "Average Humidity",
+      "fn": "/",
+      "fields": [
+        {
+          "type": "fieldAccess",
+          "name": "Humidity",
+          "fieldName": "Humidity"
+        },
+        {
+          "type": "fieldAccess",
+          "name": "count",
+          "fieldName": "count"
+        }
+      ]
+    },
+    {
+      "type": "arithmetic",
+      "name": "Average PM1",
+      "fn": "/",
+      "fields": [
+        {
+          "type": "fieldAccess",
+          "name": "PM1",
+          "fieldName": "PM1"
+        },
+        {
+          "type": "fieldAccess",
+          "name": "count",
+          "fieldName": "count"
+        }
+      ]
+    },
+    {
+      "type": "arithmetic",
+      "name": "Average PM4",
+      "fn": "/",
+      "fields": [
+        {
+          "type": "fieldAccess",
+          "name": "PM4",
+          "fieldName": "PM4"
+        },
+        {
+          "type": "fieldAccess",
+          "name": "count",
+          "fieldName": "count"
+        }
+      ]
+    },
+    {
+      "type": "arithmetic",
+      "name": "Average PM10",
+      "fn": "/",
+      "fields": [
+        {
+          "type": "fieldAccess",
+          "name": "PM10",
+          "fieldName": "PM10"
+        },
+        {
+          "type": "fieldAccess",
+          "name": "count",
+          "fieldName": "count"
+        }
+      ]
+    },
+    {
+      "type": "arithmetic",
+      "name": "Average PMTotal",
+      "fn": "/",
+      "fields": [
+        {
+          "type": "fieldAccess",
+          "name": "PMTotal",
+          "fieldName": "PMTotal"
+        },
+        {
+          "type": "fieldAccess",
+          "name": "count",
+          "fieldName": "count"
+        }
+      ]
+    },
+    {
+      "type": "arithmetic",
+      "name": "Average Pressure",
+      "fn": "/",
+      "fields": [
+        {
+          "type": "fieldAccess",
+          "name": "Pressure",
+          "fieldName": "Pressure"
+        },
+        {
+          "type": "fieldAccess",
+          "name": "count",
+          "fieldName": "count"
+        }
+      ]
+    },
+    {
+      "type": "arithmetic",
+      "name": "Average Temperature",
+      "fn": "/",
+      "fields": [
+        {
+          "type": "fieldAccess",
+          "name": "Temperature",
+          "fieldName": "Temperature"
+        },
+        {
+          "type": "fieldAccess",
+          "name": "count",
+          "fieldName": "count"
+        }
+      ]
+    }
+  ],
+  "intervals": [
+    "2013-08-31T00:00:00.000/2019-10-31T00:00:00.000"
+  ]
+}
+
