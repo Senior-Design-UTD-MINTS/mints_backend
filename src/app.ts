@@ -7,6 +7,7 @@ import { readFileSync } from 'fs';
 const app: express.Application = express();
 const server_port: number = 3000;
 const DRUID_SQL_URL: string = "http://localhost:8082/druid/v2/sql/";
+const DRUID_NATIVE_URL: string = "http://localhost:8082/druid/v2/";
 // shows all table names in druid
 const TABLE_NAME_QUERY: string = "SELECT TABLE_NAME as sensor FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'TABLE'";
 // columns we need for every query from all sensors (MINTS only currently)
@@ -84,24 +85,19 @@ function handleIntervalData(req: express.Request, res: express.Response): void {
 function getLatestAggregation(req: express.Request, res: express.Response): void {
   if (req.query.sensor) {
     let sensor: string = req.query.sensor;
-    if (isSQLInjectionAttempt(sensor)) {
-      res.sendStatus(400);
-      res.send("Bad sensor string");
-    } else {
-      var file = readFileSync('aggregation.txt', 'utf-8');
-      var fin = file.replace("SENSORSOURCE", '"' + sensor + '"');
-      request.post(DRUID_SQL_URL, (error: any, _response: request.Response, body: any) => {
-        if (body) {
-          res.contentType("json");
-          res.send({ "entries": body });
-        } else {
-          console.log(error);
-          res.sendStatus(400);
-          res.send("error connecting to druid");
-        }
-        console.log(fin)
-      }).json(toDruidQueryJSON(fin));
-    }
+    let file: string = readFileSync("aggregation.json", "utf-8");
+    let query_json = JSON.parse(file.replace("SENSORSOURCE", `"${sensor}"`));
+    request.post(DRUID_NATIVE_URL, (error: any, _response: request.Response, body: any) => {
+      if (body) {
+        res.contentType("json");
+        res.send({ "entries": body });
+      } else {
+        console.log(error);
+        res.sendStatus(400);
+        res.send("error connecting to druid");
+      }
+      console.log(query_json)
+    }).json(query_json);
   } else {
     res.sendStatus(400);
     console.log("invalid args");
