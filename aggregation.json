@@ -61,7 +61,6 @@
       "name": "Temperature",
       "fieldName": "Temperature"
     }
-    
   ],
   "postAggregations": [
     {
@@ -236,7 +235,6 @@
     }
   ],
   "intervals": [
-    "2013-08-31T00:00:00.000/2019-10-31T00:00:00.000"
+    "YYYY-MM-DDT00:00:00.000/YYYY-MM-DDT23:59:30.000"
   ]
 }
-

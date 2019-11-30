@@ -11,7 +11,7 @@ const DRUID_NATIVE_URL: string = "http://localhost:8082/druid/v2/";
 // shows all table names in druid
 const TABLE_NAME_QUERY: string = "SELECT TABLE_NAME as sensor FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'TABLE'";
 // columns we need for every query from all sensors (MINTS only currently)
-const BASE_SENSOR_INFO_SELECT_CLAUSE: string = "SELECT __time as dateTime, Latitude, Longitude, PM1, PM2_5, PM4, PM10, PMTotal, Temperature, Humidity";
+const BASE_SENSOR_INFO_SELECT_CLAUSE: string = "SELECT DISTINCT __time as dateTime, Latitude, Longitude, PM1, PM2_5, PM4, PM10, PMTotal, Temperature, Humidity";
 
 // provides latest data for a given sensor
 function handleLatestData(req: express.Request, res: express.Response): void {
@@ -86,7 +86,12 @@ function getLatestAggregation(req: express.Request, res: express.Response): void
   if (req.query.sensor) {
     let sensor: string = req.query.sensor;
     let file: string = readFileSync("aggregation.json", "utf-8");
-    let query_json = JSON.parse(file.replace("SENSORSOURCE", `"${sensor}"`));
+    // Get todays date, we want to aggregate the prior days data
+    var today = new Date();
+    var dd = String(today.getDate() - 1).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var yyyy = String(today.getFullYear());
+    let query_json = JSON.parse(file.replace("SENSORSOURCE", `"${sensor}"`).replace(/YYYY/g, yyyy).replace(/MM/g, mm).replace(/DD/g, dd));
     request.post(DRUID_NATIVE_URL, (error: any, _response: request.Response, body: any) => {
       if (body) {
         res.contentType("json");
