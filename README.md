@@ -1,3 +1,5 @@
+First, run `npm install` to install all dependencies.
+
 To run the server, run
 ```
 npm start
